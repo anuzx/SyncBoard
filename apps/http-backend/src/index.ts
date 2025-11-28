@@ -8,6 +8,9 @@ const app = express()
 
 app.post("/signup", (req, res) => {
     //we should do zod validation here
+    res.json({
+        userId:"123"
+    })
 })
 
 
@@ -26,7 +29,10 @@ app.post("/signin", (req, res) => {
 
 
 app.post("/createRoom", userAuth ,(req, res) => {
-  
+    //db call
+    res.json({
+        roomId:"123"
+    })
 });
 
 
