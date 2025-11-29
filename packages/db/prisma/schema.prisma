@@ -1,0 +1,40 @@
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  
+}
+
+model User {
+id          String       @id @default(uuid())
+email       String       
+password    String  
+name        String
+photo       String?    
+rooms       Room[] //one to many reln , single user can make multiple rooms
+chats       Chat[]//every user can send multiple chat messages
+}
+
+model Room {
+id          Int       @id @default(autoincrement())
+slug        String    @unique
+createAt    DateTime  @default(now())
+adminId     String
+admin       User      @relation(fields: [adminId] , references: [id])
+chats       Chat[] //every room will have multiple chats
+
+}
+
+model Chat {
+  id        Int       @id @default(autoincrement())
+  roomId    Int
+  message   String
+  userId    String   
+  room      Room      @relation(fields: [roomId] , references: [id]) //every chat will have one room 
+  user     User       @relation(fields: [userId] , references: [id]) //every chat will have a assosiated user
+}
