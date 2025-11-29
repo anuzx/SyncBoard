@@ -23,4 +23,6 @@ i) first we did npm init -y and change the name to @repo/backend-commom in packa
 ii) while importing it in any of the backends we need to edit the devDependencies of that backend's package.json(we need to add that repo name which we want to import), after this we did a global pnpm install 
 
 3.) How to setup prisma :
-make a db package , then "pnpm install prisma" , "npx prisma init" , then define you schemas and get a db url paste it in .env , "npx prisma migrate dev --name init_schema" {this command will convert your schema into sql queries and migrate it into form of tables in your database} ,then we have to do "npx prisma generate"
+make a db package , then "pnpm install prisma" , "npx prisma init" , then define your schemas and get a db url paste it in .env , "npx prisma migrate dev --name init_schema" {this command will convert your schema into sql queries and migrate it into form of tables in your database} ,then we have to do "npx prisma generate" and create index.ts in src and export it by using export script in package.json and then import it using "@repo/db" in http-backend package.json as dependecies and not devDependencies, then do global "pnpm install" to sync everything 
+NOTE: MOVE PRISMA.CONFIG.TS TO SRC
+
