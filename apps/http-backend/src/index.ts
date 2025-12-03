@@ -7,7 +7,7 @@ import {
   SigninSchema,
   CreateRoomSchema,
 } from "@repo/common/types";
-import {prismaClient} from "@repo/db/client"
+import {prisma} from "@repo/db"
 
 const app = express();
 
@@ -24,7 +24,7 @@ app.post("/signup", async(req, res) => {
   }
   //db call
  try {
-  const user = await prismaClient.user.create({
+  const user = await prisma.user.create({
      data: {
       email: parsedData.data?.username,
        //TODO:hash the password
@@ -53,7 +53,7 @@ app.post("/signin", async(req, res) => {
     return;
   }
   //TODO: compare the hased password
-  const user = await prismaClient.user.findFirst({
+  const user = await prisma.user.findFirst({
     where: {
       email: parsedData.data.username,
       password: parsedData.data.password,
@@ -94,7 +94,7 @@ if (!req.userId) {
   throw new Error("Unauthorized");
 }
  try {
-   const room = await prismaClient.room.create({
+   const room = await prisma.room.create({
      data: {
        slug: parsedData.data.name,
        admin: {
