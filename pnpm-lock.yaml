@@ -137,6 +137,9 @@ importers:
       '@prisma/client':
         specifier: ^7.1.0
         version: 7.1.0(prisma@7.1.0(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(typescript@5.9.2))(typescript@5.9.2)
+      '@prisma/client-runtime-utils':
+        specifier: ^7.1.0
+        version: 7.1.0
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
