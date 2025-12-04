@@ -1,10 +1,16 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "rootDir": ".",
+    "rootDir": "./src",
     "outDir": "./dist",
-    
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "declaration": true,
+    "declarationMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": false
   },
-  "include": ["src/**/*", "prisma.config.ts"],
+  "include": ["src/**/*", "generated/**/*"],
   "exclude": ["node_modules", "dist", "prisma/migrations"]
 }
