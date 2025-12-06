@@ -112,4 +112,23 @@ if (!req.userId) {
  }
 });
 
+//if people comes to your chat , they should see the existing messages , old messages will comes via http layer but new messages will come through ws
+
+app.get("/chat/:roomId", (req, res)=>{
+  const roomId = Number(req.params.roomId)
+ const messages =  prisma.chat.findMany({
+    where: {
+      roomId:roomId
+   },
+   orderBy: {
+     id:"desc" // arrange messages in desc format
+   },
+   take:50 //only get 50 messages
+ })
+  
+  res.json({
+    messages
+  })
+})
+
 app.listen(3001, () => console.log("server started at port 3001"));
