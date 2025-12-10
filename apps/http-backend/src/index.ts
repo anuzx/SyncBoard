@@ -7,11 +7,13 @@ import {
   SigninSchema,
   CreateRoomSchema,
 } from "@repo/common/types";
-import {prisma} from "@repo/db"
+import { prisma } from "@repo/db"
+import cors from "cors"
 
 const app = express();
 
 app.use(express.json())
+app.use(cors())
 
 app.post("/signup", async(req, res) => {
   // zod validation here
@@ -114,21 +116,43 @@ if (!req.userId) {
 
 //if people comes to your chat , they should see the existing messages , old messages will comes via http layer but new messages will come through ws
 
-app.get("/chat/:roomId", (req, res)=>{
-  const roomId = Number(req.params.roomId)
- const messages =  prisma.chat.findMany({
-    where: {
-      roomId:roomId
-   },
-   orderBy: {
-     id:"desc" // arrange messages in desc format
-   },
-   take:50 //only get 50 messages
- })
-  
-  res.json({
-    messages
+app.get("/canvas/:roomId", async(req, res)=>{
+ try {
+   const roomId = Number(req.params.roomId)
+  const messages = await prisma.chat.findMany({
+     where: {
+       roomId:roomId
+    },
+    orderBy: {
+      id:"desc" // arrange messages in desc format
+    },
+    take:1000 //only get 1000 messages
   })
+   
+   res.json({
+     messages
+   })
+ } catch (error) {
+   console.log(error);
+   res.json({
+  messages:[]
 })
+ }
+})
+
+app.get("/room/:slug",async (req, res) => {
+  const slug = req.params.slug;
+  const room = await prisma.room.findFirst({
+    where: {
+      slug,
+    },
+    
+  });
+
+  res.json({  
+    room,
+  });
+});
+
 
 app.listen(3001, () => console.log("server started at port 3001"));

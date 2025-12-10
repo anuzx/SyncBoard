@@ -33,7 +33,7 @@ chats       Chat[] //every room will have multiple chats
 model Chat {
   id        Int       @id @default(autoincrement())
   roomId    Int
-  message   String
+  message   String   //{type:"rect" , x:1 ,y:1 , w:10 , h:10}
   userId    String   
   room      Room      @relation(fields: [roomId] , references: [id]) //every chat will have one room 
   user     User       @relation(fields: [userId] , references: [id]) //every chat will have a assosiated user

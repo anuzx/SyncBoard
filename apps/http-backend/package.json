@@ -9,16 +9,18 @@
     "build": "tsc -b"
   },
   "dependencies": {
+    "@repo/db": "workspace:*",
+    "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9.0.10",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "@repo/db": "workspace:*"
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/express": "^5.0.5",
     "@repo/backend-common": "workspace:*",
     "@repo/common": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/express": "^5.0.5",
     "typescript": "^5.0.0"
   },
   "keywords": [],
