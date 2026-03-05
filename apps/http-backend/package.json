@@ -9,7 +9,6 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@repo/db": "workspace:*",
     "@types/cors": "^2.8.19",
     "@types/jsonwebtoken": "^9.0.10",
     "bcrypt": "^6.0.0",
