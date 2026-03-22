@@ -9,19 +9,23 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@types/cors": "^2.8.19",
-    "@types/jsonwebtoken": "^9.0.10",
+    "arctic": "^3.7.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
+    "drizzle-orm": "^0.45.1",
     "express": "^5.1.0",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.2",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@repo/backend-common": "workspace:*",
     "@repo/common": "workspace:*",
+    "@repo/db": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
+    "@types/jsonwebtoken": "^9.0.10",
     "typescript": "^5.0.0"
   },
   "keywords": [],

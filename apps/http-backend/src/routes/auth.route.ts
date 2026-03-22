@@ -1,9 +1,19 @@
 import { Router } from "express";
-import { handleSignup, handleSingin } from "../controllers/auth.controller.js";
+import {
+  githubLogin,
+  githubCallback,
+  googleLogin,
+  googleCallback
+} from "../controllers/auth.controller.js";
 
-const router = Router()
+const router = Router();
 
-router.post("/signup", handleSignup)
-router.post("/login", handleSingin)
+//redirect to github
+router.get("/github", githubLogin);
+router.get("/google", googleLogin)
 
-export default router
+//callback
+router.get("/github/callback", githubCallback);
+router.get("/google/callback", googleCallback)
+
+export default router;

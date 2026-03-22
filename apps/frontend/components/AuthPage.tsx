@@ -1,19 +1,26 @@
 "use client"
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google"
 
 
-export function AuthPage({ isSignin }: {
-    isSignin:boolean
-}) {
-    return (
-      <div className="w-screen h-screen flex justify-center items-center">
-        <div className="p-2 m-2 bg-white rounded">
-          <input type="text" placeholder="Email..."></input>
-                <input type="text" placeholder="password..."></input>
-                
-                <button onClick={() => {
-                    
-                }}>{isSignin?"Signin" :"Signup" }</button>
-        </div>
-      </div>
-    );
+export const AuthPage = () => {
+
+  const responseGoogle = async (authResult) => {
+    try {
+
+    } catch (err) {
+      console.error("error while gooogle auth", err)
+    }
+  }
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: responseGoogle,
+    onError: responseGoogle,
+    flow: 'auth-code'
+  })
+  return (
+    <div>
+      <button onClick={googleLogin}>
+        Login with google</button>
+    </div>
+  )
 }
