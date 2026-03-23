@@ -1,5 +1,5 @@
 import * as arctic from "arctic"
-import { google } from "../config/oauth.js"
+import { github, google } from "../config/oauth.js"
 import { Request, Response } from "express"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiRes } from "../utils/ApiRes.js"
@@ -64,7 +64,7 @@ async function findOrCreateOAuthUser(opts: {
         .values({ name, email })
         .returning({ id: users.id })
 
-      userId = newUser.id
+      userId = newUser!.id
     }
   } else {
     // No e-mail provided by provider (rare) — always create a fresh user
@@ -73,7 +73,7 @@ async function findOrCreateOAuthUser(opts: {
       .values({ name, email: null })
       .returning({ id: users.id })
 
-    userId = newUser.id
+    userId = newUser!.id
   }
 
   // 4. Create the oauth_accounts row regardless of whether the user was new
@@ -85,69 +85,132 @@ async function findOrCreateOAuthUser(opts: {
 
   return userId
 }
-export const githubLogin = () => {
 
+//github oauth
+export const githubLogin = (_req: Request, res: Response) => {
+  const state = arctic.generateState()
+  const url = github.createAuthorizationURL(state, ["user:email"])
+
+  res.cookie("github_oauth_state", state, COOKIE_CONFIG)
+
+  return res.redirect(url.toString())
 }
 
-export const githubCallback = () => { }
+export const githubCallback = async (req: Request, res: Response) => {
+  const { code, state } = req.query
+  const { github_oauth_state: storedState } = req.cookies
 
+  if (!code || !state || !storedState || state !== storedState) {
+    throw new ApiError(400, "Invalid OAuth request")
+  }
 
-export const googleLogin = (req: Request, res: Response) => {
+  let tokens: arctic.OAuth2Tokens
+
+  try {
+    tokens = await github.validateAuthorizationCode(code as string)
+  } catch (error) {
+    throw new ApiError(400, "GitHub auth failed")
+  }
+
+  const accessToken = tokens.accessToken()
+
+  // Fetch user profile from GitHub API
+  const userResponse = await fetch("https://api.github.com/user", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+
+  if (!userResponse.ok) {
+    throw new ApiError(400, "Failed to fetch GitHub user profile")
+  }
+
+  const githubUser = (await userResponse.json()) as {
+    id: number
+    login: string
+    name: string | null
+    email: string | null
+  }
+
+  // If email is not public, fetch from the emails endpoint
+  let email = githubUser.email
+  if (!email) {
+    const emailsResponse = await fetch("https://api.github.com/user/emails", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+
+    if (emailsResponse.ok) {
+      const emails = (await emailsResponse.json()) as {
+        email: string
+        primary: boolean
+        verified: boolean
+      }[]
+      const primaryEmail = emails.find((e) => e.primary && e.verified)
+      email = primaryEmail?.email ?? null
+    }
+  }
+
+  const userId = await findOrCreateOAuthUser({
+    provider: "github",
+    providerAccountId: String(githubUser.id),
+    name: githubUser.name ?? githubUser.login,
+    email,
+  })
+
+  const jwtToken = signJwt(userId)
+
+  res.clearCookie("github_oauth_state")
+
+  return res
+    .cookie("auth_token", jwtToken, {
+      ...COOKIE_CONFIG,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .redirect(`${process.env.FRONTEND_URL}/dashboard`)
+}
+
+//goolge oauth
+export const googleLogin = (_req: Request, res: Response) => {
   const state = arctic.generateState()
   const codeVerifier = arctic.generateCodeVerifier()
   const url = google.createAuthorizationURL(state, codeVerifier, [
     "openid",
     "profile",
-    "email"
-  ]);
+    "email",
+  ])
 
-  const cookieConfig = {
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax" as const
-  }
+  res.cookie("google_oauth_state", state, COOKIE_CONFIG)
+  res.cookie("google_oauth_verifier", codeVerifier, COOKIE_CONFIG)
 
-  res.cookie("google_oauth_state", state, cookieConfig)
-
-  res.cookie("google_oauth_verifier", codeVerifier, cookieConfig)
-
-  return res.redirect(url.toString());
+  return res.redirect(url.toString())
 }
 
-
 export const googleCallback = async (req: Request, res: Response) => {
-  //google redirects with code ,and state in query params 
-  //we will use code to find out the user
   const { code, state } = req.query
 
   const {
     google_oauth_state: storedState,
-    google_oauth_verifier: codeVerifier
+    google_oauth_verifier: codeVerifier,
   } = req.cookies
 
   if (!code || !state || !storedState || !codeVerifier || state !== storedState) {
     throw new ApiError(400, "Invalid OAuth request")
   }
 
-  let token: arctic.OAuth2Tokens
+  let tokens: arctic.OAuth2Tokens
 
   try {
-    token = await google.validateAuthorizationCode(code as string, codeVerifier)
+    tokens = await google.validateAuthorizationCode(code as string, codeVerifier)
   } catch (error) {
-    throw new ApiError(400, "Google auth failed");
+    throw new ApiError(400, "Google auth failed")
   }
 
   // The id_token JWT contains the user's profile claims — no extra HTTP call needed
-  const claims = arctic.decodeIdToken(token.idToken()) as {
+  const claims = arctic.decodeIdToken(tokens.idToken()) as {
     sub: string
     name: string
     email: string
   }
 
   const { sub: googleUserId, name, email } = claims
-
-  //check if oauth account exists
-
 
   const userId = await findOrCreateOAuthUser({
     provider: "google",
